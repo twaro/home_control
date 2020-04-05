@@ -1,0 +1,6 @@
+{'id': 1, 'room_name_id': 'salon', 'device_name': 'Roleta1', 'go_up_pin': 1, 'go_down_pin': 2, 'type': 'blind'}
+{'id': 2, 'room_name_id': 'salon', 'device_name': 'Roleta2', 'go_up_pin': 4, 'go_down_pin': 2, 'type': 'blind'}
+{'id': 3, 'room_name_id': 'salon', 'device_name': 'Roleta3', 'go_up_pin': 5, 'go_down_pin': 66, 'type': 'blind'}
+{'id': 1, 'room_name_id': 'lazienka', 'device_name': 'lampka 1', 'on_pin': 33, 'off_pin': 3, 'type': 'light'}
+{'id': 2, 'room_name_id': 'korytarz', 'device_name': 'lampka2', 'on_pin': 8, 'off_pin': 9, 'type': 'light'}
+{'id': 3, 'room_name_id': 'salon', 'device_name': 'zarowka_testowa', 'on_pin': 0, 'off_pin': 0, 'type': 'light'}

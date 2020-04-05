@@ -1,0 +1,101 @@
+
+
+<!DOCTYPE html>
+{% load static %}
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="{% static 'devices/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'devices/fontawesome/css/all.css' %}">
+    <script defer src="{% static 'devices/fontawesome/js/all.js"></script>
+    <script src="{% static 'devices/js/jquery-3.4.1.js' %}"></script>
+    <script src="{% static 'devices/js/popper-utils.min.js' %}"></script>
+    <script src="{% static 'devices/js/bootstrap.min.js' %}"></script>
+
+  </head>
+  <body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="{% url 'index' %}">
+        <span class="fas fa-home" aria-label="Home"></span>
+    </a>
+      <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+      </button>
+        <!--- Items --->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            {% if room_names %}
+            <ul class="navbar-nav">
+            {% for room in room_names %}
+                <li class="nav-item">
+                    <a class="nav-link" href="/devices/{{ room }}/">{{ room|upper }}
+                    </a>
+                </li>
+            {% endfor %}
+            </ul>
+            {% else %}
+                <span class="nav-link disabled">No rooms available.</span>
+            {% endif %}
+        </div>
+  </nav>
+<!---  CONTAINER  --->
+    <div class="col-6 col-lg-4">
+    <h5>{{ blind|upper }}</h5>
+    <p></p>
+    <p>
+    <form method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="hidden" name="main_action" value="all_blinds_open">
+    <button class="btn btn-success" type="submit">ALL BLINDS OPEN</button>
+    </form>
+    </p>
+
+    <p>
+    <form method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="hidden" name="main_action" value="all_blinds_close">
+    <button class="btn btn-success" type="submit">ALL BLINDS CLOSE</button>
+    </form>
+    </p>
+
+    <p>
+    <form method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="hidden" name="main_action" value="all_blinds_stop">
+    <button class="btn btn-success" type="submit">ALL BLINDS STOP</button>
+    </form>
+    </p>
+
+    <p>
+    <form method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="hidden" name="main_action" value="emergency_stop">
+    <button class="btn btn-success" type="submit">EMERGENCY STOP</button>
+    </form>
+    </p>
+
+    <p>
+    <form method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="hidden" name="main_action" value="restart_system">
+    <button class="btn btn-success" type="submit">RESTART SYSTEM</button>
+    </form>
+    </p>
+
+    <p>
+    <form method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="hidden" name="main_action" value="shutdown_system">
+    <button class="btn btn-success" type="submit">SHUTDOWN SYSTEM</button>
+    </form>
+    </p>
+    </div>
+
+  </body>
+</html>

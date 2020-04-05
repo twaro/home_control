@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="{% static 'devices/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'devices/fontawesome/css/all.css' %}">
+    <script defer src="{% static 'devices/fontawesome/js/all.js"></script>
+    <script src="{% static 'devices/js/jquery-3.4.1.js' %}"></script>
+    <script src="{% static 'devices/js/popper-utils.min.js' %}"></script>
+    <script src="{% static 'devices/js/bootstrap.min.js' %}"></script>
+
+  </head>
+  <body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="{% url 'index' %}">
+        <span class="fas fa-home" aria-label="Home"></span>
+    </a>
+      <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+      </button>
+        <!--- Items --->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            {% if room_names %}
+            <ul class="navbar-nav">
+            {% for room in room_names %}
+                {% if room|lower in request.path %}
+                    <li class="nav-item active">
+                        <a class="nav-link" href="/devices/{{ room }}/">{{ room|upper }}
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/devices/{{ room }}/">{{ room|upper }}
+                        </a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            </ul>
+            {% else %}
+                <span class="nav-link disabled">No rooms available.</span>
+            {% endif %}
+        </div>
+  </nav>
+
+  <div class="container-fluid text-center bg-light">
+      <h2 class="lead bg-secondary text-white font-italic">BLINDS</h2>
+  </div>
+  {% if blinds_in_room %}
+  <div class="container">
+      <div class="row row-offcanvas row-offcanvas-right justify-content-md-center">
+        <div class="col-12 col-md-9">
+          <div class="row">
+                {% for blind in blinds_in_room %}
+                <div class="col-6 col-lg-4 border-bottom">
+                  <h5>{{ blind|upper }}</h5>
+                  <p></p>
+                    <p>
+                    <form method="post">
+                    {% csrf_token %}
+                    {{ form }}
+                    <input type="hidden" name="device_type" value="{{ blind.device_type }}">
+                    <input type="hidden" name="room_name" value="{{ room_name }}">
+                    <input type="hidden" name="blind_name" value="{{ blind }}">
+                    <input type="hidden" name="action" value="open">
+                    <button class="btn btn-success" type="submit">Open</button>
+                    </form>
+                    </p>
+                 <p>
+                    <form method="post">
+                    {% csrf_token %}
+                    {{ form }}
+                    <input type="hidden" name="device_type" value="{{ blind.device_type }}">
+                    <input type="hidden" name="room_name" value="{{ room_name }}">
+                    <input type="hidden" name="blind_name" value="{{ blind }}">
+                    <input type="hidden" name="action" value="close">
+                    <button class="btn btn-success" type="submit">Close</button>
+                    </form>
+                    </p>
+                    <p>&nbsp;</p>
+                </div><!--/span-->
+                {% endfor %}
+          </div><!--/row-->
+         </div><!--/span-->
+      </div><!--/row-->
+  </div><!--/container-->
+
+  {% else %}
+      <div class="container-fluid alert alert-warning text-center" role="alert">
+      No available <b>Blinds</b> in this room.
+      </div>
+  {% endif %}
+<!--  ===================== LIGHTS =================  -->
+
+
+  <div class="container-fluid text-center bg-light">
+      <h2 class="lead bg-secondary text-white font-italic">LIGHTS</h2>
+  </div>
+  {% if lights_in_room %}
+  <div class="container">
+      <div class="row row-offcanvas row-offcanvas-right justify-content-md-center">
+        <div class="col-12 col-md-9">
+          <div class="row">
+                {% for light in lights_in_room %}
+                <div class="col-6 col-lg-4 border-bottom">
+                  <h5>{{ light|upper }}</h5>
+                  <p></p>
+                    <p>
+                    <form method="post">
+                    {% csrf_token %}
+                    {{ form }}
+                    <input type="hidden" name="device_type" value="{{ light.device_type }}">
+                    <input type="hidden" name="room_name" value="{{ room_name }}">
+                    <input type="hidden" name="light_name" value="{{ light }}">
+                    <input type="hidden" name="action" value="turn_on">
+                    <button class="btn btn-success" type="submit">Turn on</button>
+                    </form>
+                    </p>
+                  <p>
+                     <form method="post">
+                    {% csrf_token %}
+                    {{ form }}
+                    <input type="hidden" name="device_type" value="{{ light.device_type }}">
+                    <input type="hidden" name="room_name" value="{{ room_name }}">
+                    <input type="hidden" name="light_name" value="{{ light }}">
+                    <input type="hidden" name="action" value="turn_off">
+                    <button class="btn btn-success" type="submit">Turn off</button>
+                    </form>
+                  </p>
+                    <p>&nbsp;</p>
+                </div><!--/span-->
+                {% endfor %}
+          </div><!--/row-->
+         </div><!--/span-->
+      </div><!--/row-->
+  </div><!--/container-->
+
+  {% else %}
+      <div class="container-fluid alert alert-warning text-center" role="alert">
+      No available <b>Lights</b> in this room.
+      </div>
+
+  {% endif %}
+
+
+
+
+
+  </body>
+</html>
