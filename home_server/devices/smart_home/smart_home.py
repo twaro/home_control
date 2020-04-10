@@ -9,7 +9,6 @@ class Room:
         self.room_name = room_name
 
 
-
 class Device(Room):
     instances = []
 
@@ -159,21 +158,20 @@ def system_shutdown():
     print("system shutdown... ")
     # system('sudo poweroff -f')
 
+
 def read_connected_devices():
     devices = []
     with open('connected_devices.txt', 'r') as f:
         lines = f.readlines()
         for line in lines:
             devices.append(eval(line))
-
     return devices
+
 
 if __name__ =="__main__":
 
-
     last_days_logging = 7
     logs_directory = "logs/"
-
 
     ManualButtons = {"Rolety_UP":      ManualButton(button_name="Rolety_UP", pin=18),
                      "Rolety_DOWN":    ManualButton(button_name="Rolety_DOWN", pin=23),
@@ -195,8 +193,8 @@ if __name__ =="__main__":
 
     # Main infinite loop
     # # while True:                                                           # Uncomment on production
-    #     # delete logs on the 1st of every month
-    if datetime.now().day == 1:
+    # Removes logs older than last_days_logging. Checks between 3.00 and 3.03 AM
+    if datetime.now().hour == 3 and datetime.now().minute < 3:
         remove_old_logs(last_days_logging, logs_directory)
 
     if ManualButtons["Rolety_UP"].is_pressed():
