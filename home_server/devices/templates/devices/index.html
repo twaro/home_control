@@ -39,24 +39,24 @@
         </div>
   </nav>
 <!---  CONTAINER  --->
-    <div class="col-6 col-lg-4">
-    <h5>{{ blind|upper }}</h5>
+
+    <div class="justify-content-center text-center">
     <p></p>
     <p>
     <form method="post">
     {% csrf_token %}
     {{ form }}
     <input type="hidden" name="main_action" value="all_blinds_open">
-    <button class="btn btn-success" type="submit">ALL BLINDS OPEN</button>
+    <button class="btn btn-success col-md-4 col-lg-2" type="submit">ALL BLINDS OPEN</button>
     </form>
     </p>
 
-    <p>
+    <p class="col-md-4 col-lg-2">
     <form method="post">
     {% csrf_token %}
     {{ form }}
     <input type="hidden" name="main_action" value="all_blinds_close">
-    <button class="btn btn-success" type="submit">ALL BLINDS CLOSE</button>
+    <button class="btn btn-success col-md-4 col-lg-2" type="submit">ALL BLINDS CLOSE</button>
     </form>
     </p>
 
@@ -65,7 +65,7 @@
     {% csrf_token %}
     {{ form }}
     <input type="hidden" name="main_action" value="all_blinds_stop">
-    <button class="btn btn-success" type="submit">ALL BLINDS STOP</button>
+    <button class="btn btn-success col-md-4 col-lg-2" type="submit">ALL BLINDS STOP</button>
     </form>
     </p>
 
@@ -74,7 +74,7 @@
     {% csrf_token %}
     {{ form }}
     <input type="hidden" name="main_action" value="emergency_stop">
-    <button class="btn btn-success" type="submit">EMERGENCY STOP</button>
+    <button class="btn btn-success col-md-4 col-lg-2" type="submit">EMERGENCY STOP</button>
     </form>
     </p>
 
@@ -83,7 +83,7 @@
     {% csrf_token %}
     {{ form }}
     <input type="hidden" name="main_action" value="restart_system">
-    <button class="btn btn-success" type="submit">RESTART SYSTEM</button>
+    <button class="btn btn-success col-md-4 col-lg-2" type="submit">RESTART SYSTEM</button>
     </form>
     </p>
 
@@ -92,7 +92,7 @@
     {% csrf_token %}
     {{ form }}
     <input type="hidden" name="main_action" value="shutdown_system">
-    <button class="btn btn-success" type="submit">SHUTDOWN SYSTEM</button>
+    <button class="btn btn-success col-md-4 col-lg-2" type="submit">SHUTDOWN SYSTEM</button>
     </form>
     </p>
     </div>
