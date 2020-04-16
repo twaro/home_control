@@ -74,6 +74,17 @@
                     <input type="hidden" name="device_type" value="{{ blind.device_type }}">
                     <input type="hidden" name="room_name" value="{{ room_name }}">
                     <input type="hidden" name="blind_name" value="{{ blind }}">
+                    <input type="hidden" name="action" value="stop">
+                    <button class="btn btn-danger" type="submit">STOP</button>
+                    </form>
+                    </p>
+                 <p>
+                    <form method="post">
+                    {% csrf_token %}
+                    {{ form }}
+                    <input type="hidden" name="device_type" value="{{ blind.device_type }}">
+                    <input type="hidden" name="room_name" value="{{ room_name }}">
+                    <input type="hidden" name="blind_name" value="{{ blind }}">
                     <input type="hidden" name="action" value="close">
                     <button class="btn btn-success" type="submit">Close</button>
                     </form>

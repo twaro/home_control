@@ -1,1 +1,1 @@
-{'id': 1, 'room_name_id': 'KUCHNIA', 'device_name': 'Roleta 1', 'go_up_pin': 5, 'go_down_pin': 12, 'type': 'blind'}
+{'id': 1, 'room_name_id': 'KUCHNIA', 'device_name': 'Roleta 1', 'go_up_pin': 8, 'go_down_pin': 10, 'type': 'blind'}

@@ -3,8 +3,10 @@ from django.http import HttpResponse, HttpResponseRedirect
 
 from .models import Room, Blind, Light
 from .smart_home import smart_home as controller
+import threading
 import os
-# Create your views here.
+
+
 def index(request):
 
     room_names = Room.objects.all()
@@ -20,6 +22,8 @@ def index(request):
             element["type"] = "light"
             print(element, file=f)
 
+    context = {'room_names': room_names}
+
     # for element in rolets:
     #     print(element.values())
         # print(getattr(element, "room_name"), getattr(element, "device_type"),
@@ -33,39 +37,36 @@ def index(request):
             if "all_blinds_open" in main_action:
                 controller.log_to_file(f"[WebServer] All blinds opening...", logs_directory)
                 for blind in Blind.objects.all():
-                    blind.open_blind()
-                controller.log_to_file(f"[WebServer] All blinds opened.", logs_directory)
+                    background_thread = threading.Thread(target=blind.open_blind)
+                    background_thread.start()
             elif "all_blinds_close" in main_action:
                 controller.log_to_file(f"[WebServer] All blinds closing...", logs_directory)
                 for blind in Blind.objects.all():
-                    blind.close_blind()
-                controller.log_to_file(f"[WebServer] All blinds closed...", logs_directory)
+                    background_thread = threading.Thread(target=blind.close_blind)
+                    background_thread.start()
             elif "all_blinds_stop" in main_action:
                 controller.log_to_file(f"[WebServer] All blinds stopping...", logs_directory)
                 for blind in Blind.objects.all():
-                    blind.initialize_blind()
-                controller.log_to_file(f"[WebServer] All blinds stopped.", logs_directory)
+                    background_thread = threading.Thread(target=blind.initialize_blind)
+                    background_thread.start()
             elif "emergency_stop" in main_action:
                 controller.log_to_file(f"[WebServer] Emergency stop performing...", logs_directory)
                 for blind in Blind.objects.all():
-                    blind.initialize_blind()
+                    background_thread = threading.Thread(target=blind.initialize_blind)
+                    background_thread.start()
                 for light in Light.objects.all():
                     light.initialize_light()
-                controller.log_to_file(f"[WebServer] Emergency stop performed.", logs_directory)
             elif "restart_system" in main_action:
                 controller.log_to_file(f"[WebServer] Restart system performing...", logs_directory)
                 controller.system_restart()
-                controller.log_to_file(f"[WebServer] Restart system performed.", logs_directory)
             elif "shutdown_system" in main_action:
                 controller.log_to_file(f"[WebServer] Shutdown system performing...", logs_directory)
                 controller.system_shutdown()
-                controller.log_to_file(f"[WebServer] Shutdown system performed.", logs_directory)
             else:
                 pass
         except:
             return HttpResponse("")
 
-    context = {'room_names': room_names}
     print(context)
     return render(request, 'devices/index.html', context)
 
@@ -79,6 +80,11 @@ def room(request, room_name):
     # print(context)
     # return render(request, 'devices/room.html', context)
     room_names = Room.objects.all()
+    context = {'room_names': room_names,
+               'room_name': room_name,
+               'blinds_in_room': Blind.objects.all().filter(room_name__exact=room_name),
+               'lights_in_room': Light.objects.all().filter(room_name__exact=room_name),
+               }
     if request.POST:
         received_data = request.POST
         device_type = received_data.get('device_type')
@@ -90,15 +96,17 @@ def room(request, room_name):
                 action = received_data.get('action')
                 if 'open' in action:
                     print(f"opening blind {blind_name}")
-                    Blind.objects.get(device_name=blind_name).open_blind()
-                    # class method to open the blind( get Blind object by blind_name.open_blind
+                    background_thread = threading.Thread(target=Blind.objects.get(device_name=blind_name).open_blind)
+                    background_thread.start()
                 elif 'close' in action:
-                    print(f"closing blind {blind_name}")
-                    Blind.objects.get(device_name=blind_name).close_blind()
-                # print(f"room: {received_data.get('room_name')}, device_type: blind,"
-                #       f" blind_name: {received_data.get('blind_name')}")
+                    background_thread = threading.Thread(target=Blind.objects.get(device_name=blind_name).close_blind)
+                    background_thread.start()
+                elif 'stop' in action:
+                    background_thread = threading.Thread(target=Blind.objects.get(device_name=blind_name).initialize_blind)
+                    background_thread.start()
                 else:
                     pass
+                return render(request, 'devices/room.html', context)
         except:
             return HttpResponse("")
         try:
@@ -117,11 +125,7 @@ def room(request, room_name):
         except:
             return HttpResponse("")
 
-    context = {'room_names': room_names,
-               'room_name': room_name,
-               'blinds_in_room': Blind.objects.all().filter(room_name__exact=room_name),
-               'lights_in_room': Light.objects.all().filter(room_name__exact=room_name),
-               }
+
     print(context)
     return render(request, 'devices/room.html', context)
 
