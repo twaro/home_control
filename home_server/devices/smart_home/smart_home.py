@@ -150,13 +150,11 @@ def remove_old_logs(last_days_logging, logs_directory):
 
 
 def system_restart():
-    print("system restart... ")
-    # system('sudo reboot')
+    system('sudo reboot')
 
 
 def system_shutdown():
-    print("system shutdown... ")
-    # system('sudo poweroff -f')
+    system('sudo poweroff -f')
 
 
 def read_connected_devices():

@@ -27,19 +27,22 @@ class Blind(models.Model):
         GPIO.setup(self.go_up_pin, GPIO.OUT)
         GPIO.setup(self.go_down_pin, GPIO.OUT)
 
+
+
     def open_blind(self):
         self.setup_gpio()
-        if not GPIO.input(self.go_down_pin):  # Check if blind is closing (0 on input)
-            GPIO.output(self.go_down_pin, 1)  # Stop closing blind
+        # If blind is closing (0 on input) - stop closing
+        if not GPIO.input(self.go_down_pin):
+            GPIO.output(self.go_down_pin, 1)
+            controller.log_to_file(f"[WebServer] Blind '{self.device_name}' in '{self.room_name}' closing aborted!",
+                                   logs_directory)
         controller.log_to_file(f"[WebServer] Blind '{self.device_name}' in '{self.room_name}' opening...",
                                logs_directory)
         GPIO.output(self.go_up_pin, 0)
         for i in range(150):
             sleep(0.2)
-            print(f'Opening {i}')
-            if not GPIO.input(self.go_down_pin):
-                controller.log_to_file(f"[WebServer] Blind '{self.device_name}' in '{self.room_name}' opening aborted!",
-                                       logs_directory)
+            # Break when during opening CLOSE Button or STOP Button clicked
+            if not GPIO.input(self.go_down_pin) or (GPIO.input(self.go_up_pin) and GPIO.input(self.go_down_pin)):
                 GPIO.output(self.go_up_pin, 1)
                 break
         else:
@@ -48,31 +51,37 @@ class Blind(models.Model):
 
     def close_blind(self):
         self.setup_gpio()
-        if not GPIO.input(self.go_up_pin):  # Check if blind is opening (0 on input)
-            GPIO.output(self.go_up_pin, 1)  # Stop opening blind
-            # controller.log_to_file(f"[WebServer] Blind '{self.device_name}' in '{self.room_name}' opening interrupted!",
-            #                        logs_directory)
-            # print(f"[WebServer] Blind '{self.device_name}' in '{self.room_name}' opening interrupted!")
+        # If blind is opening (0 on input) - stop opening
+        if not GPIO.input(self.go_up_pin):
+            GPIO.output(self.go_up_pin, 1)
+            controller.log_to_file(f"[WebServer] Blind '{self.device_name}' in '{self.room_name}' opening aborted!",
+                                   logs_directory)
         controller.log_to_file(f"[WebServer] Blind '{self.device_name}' in '{self.room_name}' closing...",
                                logs_directory)
         GPIO.output(self.go_down_pin, 0)
         for i in range(150):
             sleep(0.2)
-            print(f'Closing {i}')
-            if not GPIO.input(self.go_up_pin):
-                controller.log_to_file(f"[WebServer] Blind '{self.device_name}' in '{self.room_name}' closing aborted!",
-                                       logs_directory)
+            # Break when during closing OPEN Button or STOP Button clicked
+            if not GPIO.input(self.go_up_pin) or (GPIO.input(self.go_up_pin) and GPIO.input(self.go_down_pin)):
                 GPIO.output(self.go_down_pin, 1)
                 break
         else:
             GPIO.output(self.go_down_pin, 1)
             controller.log_to_file(f"[WebServer] Blind '{self.device_name}' in '{self.room_name}' closed.", logs_directory)
+            print(f"[WebServer] Blind '{self.device_name}' in '{self.room_name}' closed.")
 
     def initialize_blind(self):
         self.setup_gpio()
         GPIO.output(self.go_up_pin, 1)
         GPIO.output(self.go_down_pin, 1)
         controller.log_to_file(f"[WebServer] Blind '{self.device_name} initialized.", logs_directory)
+
+    def stop_blind(self):
+        self.setup_gpio()
+        GPIO.output(self.go_up_pin, 1)
+        GPIO.output(self.go_down_pin, 1)
+        controller.log_to_file(f"[WebServer] Blind '{self.device_name} stopped.", logs_directory)
+        print("stopped")
 
 
 class Light(models.Model):
