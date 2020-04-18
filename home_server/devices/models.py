@@ -27,8 +27,6 @@ class Blind(models.Model):
         GPIO.setup(self.go_up_pin, GPIO.OUT)
         GPIO.setup(self.go_down_pin, GPIO.OUT)
 
-
-
     def open_blind(self):
         self.setup_gpio()
         # If blind is closing (0 on input) - stop closing
@@ -84,7 +82,7 @@ class Blind(models.Model):
         print("stopped")
 
 
-class Light(models.Model):
+class Light(models.Model): # TODO This Class is not finished
     room_name = models.ForeignKey(Room, on_delete=models.CASCADE)
     device_type = "light"
     device_name = models.CharField(max_length=120, default="")
@@ -107,7 +105,6 @@ class Light(models.Model):
     def initialize_light(self):
         for pin in self.on_pin, self.off_pin:
             controller.log_to_file(f"[WebServer] Light '{self.device_name} in '{self.room_name}' initializing...", logs_directory)
-            # TODO Find how to initialize Light
             # GPIO.setup(xxxx, xxx)
             # GPIO.output(pin, 1)
             print("Initialize light")

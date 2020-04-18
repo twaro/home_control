@@ -24,14 +24,8 @@ def index(request):
 
     context = {'room_names': room_names}
 
-    # for element in rolets:
-    #     print(element.values())
-        # print(getattr(element, "room_name"), getattr(element, "device_type"),
-        #       getattr(element, "device_name"))
-
     if request.POST:
         received_data = request.POST
-        print(received_data)
         main_action = received_data.get('main_action')
         try:
             if "all_blinds_open" in main_action:
@@ -69,18 +63,10 @@ def index(request):
         except:
             return HttpResponse("")
 
-    print(context)
     return render(request, 'devices/index.html', context)
 
+
 def room(request, room_name):
-    # room_names = Room.objects.all()
-    #
-    # context = {'room_names': room_names,
-    #            'room_name': room_name,
-    #            'blinds_in_room': Blind.objects.all().filter(room_name__exact=room_name),
-    #            }
-    # print(context)
-    # return render(request, 'devices/room.html', context)
     room_names = Room.objects.all()
     context = {'room_names': room_names,
                'room_name': room_name,
@@ -90,7 +76,6 @@ def room(request, room_name):
     if request.POST:
         received_data = request.POST
         device_type = received_data.get('device_type')
-        print(f"received_data: {received_data}")
         try:
             if 'blind' in device_type:
                 room_name = received_data.get('room_name')
@@ -116,26 +101,17 @@ def room(request, room_name):
                 light_name = received_data.get('light_name')
                 action = received_data.get('action')
                 if 'turn_on' in action:
-                    print(f"turning ON light {light_name}")
                     Light.objects.get(device_name=light_name).turn_on_light()
                 elif 'turn_off' in action:
-                    print(f"turning off light {light_name}")
                     Light.objects.get(device_name=light_name).turn_off_light()
                 else:
                     pass
+                return render(request, 'devices/room.html', context)
         except:
             return HttpResponse("")
 
-
-    print(context)
     return render(request, 'devices/room.html', context)
 
 
 def device(request, room_name, device_name):
     return HttpResponse(f"Room {room_name}, device {device_name} view")
-
-# kuchnia = Room.objects.get_or_create(room_name="KITCHEN")
-# pokoj = Room.objects.get_or_create(room_name="SALON")
-# lazienka = Room.objects.get_or_create(room_name="BATHROOM")
-# sypialnia = Room.objects.get_or_create(room_name="ROOM2")
-# korytarz = Room.objects.get_or_create(room_name="HALL")

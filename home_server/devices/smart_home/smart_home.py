@@ -1,77 +1,81 @@
-# import RPi.GPIO as GPIO                                                   # Uncomment on production
+import RPi.GPIO as GPIO                                                   # Uncomment on production
 from datetime import datetime, timedelta
 from time import sleep
 from os import system, listdir, remove
+import threading
 
 
-class Room:
-    def __init__(self, room_name):
-        self.room_name = room_name
-
-
-class Device(Room):
-    instances = []
-
-    def __init__(self, device_name, _device_type, room_name):
+class Blind:
+    def __init__(self, device_name=None, room_name=None, go_up_pin=None, go_down_pin=None):
         self.device_name = device_name
-        self._device_type = _device_type
-        super().__init__(room_name)
-        self.__class__.instances.append(self)
-
-    @classmethod
-    def print_all(cls, room):
-        for instance in cls.instances:
-            if instance.room_name == room:
-                print(f"Room {room} - {instance.__dict__}")
-            if room.casefold() == "all":
-                print(f"{instance.__dict__}")
-
-
-class Light(Device):
-    def __init__(self, device_name, _device_type="Light", room_name="", pin_on=None, pin_off=None):
-        self.pin_on = pin_on
-        self.pin_off = pin_off
-        super().__init__(device_name, _device_type, room_name)
-
-
-class Blind(Device):
-    def __init__(self, device_name, _device_type="Blind", room_name="", go_up_pin=None, go_down_pin=None):
+        self.room_name = room_name
         self.go_up_pin = go_up_pin
         self.go_down_pin = go_down_pin
-        super().__init__(device_name, _device_type, room_name)
 
-    def initialize(self):
-        for pin in self.go_up_pin, self.go_down_pin:
-            # GPIO.setup(pin, GPIO.OUT)                                      # Uncomment on production
-            # GPIO.output(pin, 1)                                            # Uncomment on production
-            # GPIO.setup(pin, GPIO.OUT)                                      # Uncomment on production
-            # GPIO.output(pin, GPIO.HIGH)                                    # Uncomment on production
-            print(f"Room: {self.room_name}, {self._device_type}: {self.device_name}, "
-                  f"PIN: {pin} - initialized")                                  # Comment on production
+    def setup_gpio(self):
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(self.go_up_pin, GPIO.OUT)
+        GPIO.setup(self.go_down_pin, GPIO.OUT)
+        pass
 
-    def open(self):
-        log_to_file(f"Opening blind _{self.device_name}_ in _{self.room_name}_...")
-        # GPIO.output(self.go_up_pin, 0)                                     # Uncomment on production
-        print(self.device_name, self._device_type, self.go_up_pin, 0)
+    def open_blind(self):
+        self.setup_gpio()
+        # If blind is closing (0 on input) - stop closing
+        if not GPIO.input(self.go_down_pin):
+            GPIO.output(self.go_down_pin, 1)
+            log_to_file(f"[ManualButton] Blind '{self.device_name}' in '{self.room_name}' closing aborted!",
+                                   logs_directory)
+        log_to_file(f"[ManualButton] Blind '{self.device_name}' in '{self.room_name}' opening...",
+                               logs_directory)
+        GPIO.output(self.go_up_pin, 0)
         for i in range(150):
             sleep(0.2)
-            # if GPIO.input(self.go_up_pin):                                 # Uncomment on production
-            #     break                                                      # Uncomment on production
-        print(self.device_name, self._device_type, self.go_up_pin, 1)
-        # GPIO.output(self.go_up_pin, 1)                                     # Uncomment on production
-        log_to_file(f"Blind _{self.device_name}_ in _{self.room_name}_ opened.")
+            # Break when during opening CLOSE Button or STOP Button clicked
+            if not GPIO.input(self.go_down_pin) or (GPIO.input(self.go_up_pin) and GPIO.input(self.go_down_pin)):
+                GPIO.output(self.go_up_pin, 1)
+                break
+        else:
+            GPIO.output(self.go_up_pin, 1)
+            log_to_file(f"[ManualButton] Blind '{self.device_name}' in '{self.room_name}' opened.",
+                                   logs_directory)
+        print(f"open blind {self.device_name} in {self.room_name}")
 
-    def close(self):
-        log_to_file(f"Closing blind _{self.device_name}_ in _{self.room_name}_...")
-        # GPIO.output(self.go_down_pin, 0)                                   # Uncomment on production
-        print(self.device_name, self._device_type, self.go_down_pin, 0)
+    def close_blind(self):
+        self.setup_gpio()
+        # If blind is opening (0 on input) - stop opening
+        if not GPIO.input(self.go_up_pin):
+            GPIO.output(self.go_up_pin, 1)
+            log_to_file(f"[ManualButton] Blind '{self.device_name}' in '{self.room_name}' opening aborted!",
+                                   logs_directory)
+        log_to_file(f"[ManualButton] Blind '{self.device_name}' in '{self.room_name}' closing...",
+                               logs_directory)
+        GPIO.output(self.go_down_pin, 0)
         for i in range(150):
             sleep(0.2)
-            # if GPIO.input(self.go_down_pin):                               # Uncomment on production
-            #     break                                                      # Uncomment on production
-        print(self.device_name, self._device_type, self.go_down_pin, 1)
-        # GPIO.output(self.go_down_pin, 1)                                   # Uncomment on production
-        log_to_file(f"Blind _{self.device_name}_ in _{self.room_name}_ closed.")
+            # Break when during closing OPEN Button or STOP Button clicked
+            if not GPIO.input(self.go_up_pin) or (GPIO.input(self.go_up_pin) and GPIO.input(self.go_down_pin)):
+                GPIO.output(self.go_down_pin, 1)
+                break
+        else:
+            GPIO.output(self.go_down_pin, 1)
+            log_to_file(f"[ManualButton] Blind '{self.device_name}' in '{self.room_name}' closed.",
+                                   logs_directory)
+            print(f"[ManualButton] Blind '{self.device_name}' in '{self.room_name}' closed.")
+        print(f"close blind {self.device_name} in {self.room_name}")
+
+    def initialize_blind(self):
+        self.setup_gpio()
+        GPIO.output(self.go_up_pin, 1)
+        GPIO.output(self.go_down_pin, 1)
+        log_to_file(f"[ManualButton] Blind '{self.device_name} initialized.", logs_directory)
+        print(f"initialize blind {self.device_name}")
+
+    def stop_blind(self):
+        self.setup_gpio()
+        GPIO.output(self.go_up_pin, 1)
+        GPIO.output(self.go_down_pin, 1)
+        log_to_file(f"[ManualButton] Blind '{self.device_name} stopped.", logs_directory)
+        print(f"stop blind {self.device_name}")
 
 
 
@@ -81,54 +85,17 @@ class ManualButton:
         self.pin = pin
 
     def initialize(self):
-        # GPIO.setup(self.pin, GPIO.OUT)                                     # Uncomment on production
-        # GPIO.output(self.pin, 1)                                           # Uncomment on production
-        # GPIO.setup(self.pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)            # Uncomment on production
-        print(f"PIN: {self.pin} - initialized")                             # Comment on production
+        GPIO.setmode(GPIO.BCM)
+        # Set safe state for button
+        GPIO.setup(self.pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)            # Uncomment on production
+        print(f"initialize {self.button_name}")
 
     def is_pressed(self):
-            # return not GPIO.input(self.pin)                                # Uncomment on production
-            return True  # delete when GPIO imported                         # Comment on production
+        if not GPIO.input(self.pin):
+            return True
+        else:
+            return False
 
-def open_all_blinds_from_button(room_name, device_name, go_up_pin):
-    print(device_name)
-    # blinds initialization
-    # GPIO.setup(pin, GPIO.OUT)  # Uncomment on production
-    # GPIO.output(pin, 1)                                            # Uncomment on production
-    # GPIO.setup(pin, GPIO.OUT)                                      # Uncomment on production
-    # GPIO.output(pin, GPIO.HIGH)                                    # Uncomment on production
-    log_to_file(f"[ManualButton] Blind '{device_name}' in '{room_name}' opening...", logs_directory)
-    # GPIO.output(go_up_pin, 0)                                     # Uncomment on production
-    # for i in range(150):                                           # Uncomment on production
-    #     sleep(0.2)                                                   # Uncomment on production
-        # if GPIO.input(go_up_pin):                                 # Uncomment on production
-        #     break                                                      # Uncomment on production
-    # GPIO.output(go_up_pin, 1)                                     # Uncomment on production
-    log_to_file(f"[ManualButton] Blind '{device_name}' in '{room_name}' opened...", logs_directory)
-
-def close_all_blinds_from_button(room_name, device_name, go_down_pin):
-    print(device_name)
-    # blinds initialization
-    # GPIO.setup(pin, GPIO.OUT)  # Uncomment on production
-    # GPIO.output(pin, 1)                                            # Uncomment on production
-    # GPIO.setup(pin, GPIO.OUT)                                      # Uncomment on production
-    # GPIO.output(pin, GPIO.HIGH)                                    # Uncomment on production
-    log_to_file(f"[ManualButton] Blind '{device_name}' in '{room_name}' closing...", logs_directory)
-    # GPIO.output(go_down_pin, 0)                                     # Uncomment on production
-    # for i in range(150):                                           # Uncomment on production
-    #     sleep(0.2)                                                   # Uncomment on production
-        # if GPIO.input(go_down_pin):                                 # Uncomment on production
-        #     break                                                      # Uncomment on production
-    # GPIO.output(go_down_pin, 1)                                     # Uncomment on production
-    log_to_file(f"[ManualButton] Blind '{device_name}' in '{room_name}' closed...", logs_directory)
-
-def initialize_all_blinds_from_button(go_up_pin, go_down_pin):
-        for pin in go_up_pin, go_down_pin:
-            # GPIO.setup(pin, GPIO.OUT)                                      # Uncomment on production
-            # GPIO.output(pin, 1)                                            # Uncomment on production
-            # GPIO.setup(pin, GPIO.OUT)                                      # Uncomment on production
-            # GPIO.output(pin, GPIO.HIGH)                                    # Uncomment on production
-            pass                                                             # Comment on production
 
 def log_to_file(log_message, log_location):
     with open(f"{log_location}{datetime.now().date()}.txt", "a+") as f:
@@ -150,11 +117,13 @@ def remove_old_logs(last_days_logging, logs_directory):
 
 
 def system_restart():
-    system('sudo reboot')
+    # system('sudo reboot')
+    print(f"system_restart")
 
 
 def system_shutdown():
-    system('sudo poweroff -f')
+    # system('sudo poweroff -f')
+    print(f"system_shutdown")
 
 
 def read_connected_devices():
@@ -178,85 +147,65 @@ if __name__ =="__main__":
                      "Reboot":         ManualButton(button_name="Reboot", pin=8),
                      "Shutdown":       ManualButton(button_name="Shutdown", pin=7)
                      }
-
-    # Django writes to file all configured devices in admin, below command reads the devices from file
-    devices = read_connected_devices()
-    # Initialize all blinds pins
-    # # GPIO.setmode(GPIO.BCM)                                                # Uncomment on production
-    # # GPIO.setwarnings(False)                                               # Uncomment on production
-    for element in devices:
-        if element['type'] == 'blind':
-            initialize_all_blinds_from_button(go_up_pin=element['go_up_pin'],
-                                              go_down_pin=element['go_down_pin'])
+    for button in ManualButtons.values():
+        button.initialize()
 
     # Main infinite loop
-    # # while True:                                                           # Uncomment on production
-    # Removes logs older than last_days_logging. Checks between 3.00 and 3.03 AM
-    if datetime.now().hour == 3 and datetime.now().minute < 3:
-        remove_old_logs(last_days_logging, logs_directory)
+    while True:
+        # Django writes to file all configured devices in admin, below command reads the devices from file
+        devices = read_connected_devices()
+        blinds = []
+        for element in devices:
+            if element['type'] == 'blind':
+                blinds.append(Blind(room_name=element['room_name_id'], device_name=element['device_name'],
+                                    go_up_pin=element['go_down_pin'], go_down_pin=element['go_up_pin']))
 
-    if ManualButtons["Rolety_UP"].is_pressed():
-        sleep(0.3)
+        # Removes logs older than last_days_logging. Checks between 3.00 and 3.03 AM
+        if datetime.now().hour == 3 and datetime.now().minute < 3:
+            remove_old_logs(last_days_logging, logs_directory)
+
         if ManualButtons["Rolety_UP"].is_pressed():
-            log_to_file(f"[ManualButton] All blinds opening...", logs_directory)
-            for element in devices:
-                if element['type'] == 'blind':
-                    open_all_blinds_from_button(room_name=element['room_name_id'],
-                                                device_name=element['device_name'],
-                                                go_up_pin=element['go_up_pin'])
-            log_to_file(f"[ManualButton] All blinds opened.", logs_directory)
-        else:
-            log_to_file("[ManualButton] 'Button UP' pressed shortly, no action!", logs_directory)
+            sleep(0.3)
+            if ManualButtons["Rolety_UP"].is_pressed():
+                log_to_file(f"[ManualButton] All blinds opening...", logs_directory)
+                for element in blinds:
+                    background_thread = threading.Thread(target=element.open_blind)
+                    background_thread.start()
 
-    if ManualButtons["Rolety_DOWN"].is_pressed():
-        sleep(0.3)
         if ManualButtons["Rolety_DOWN"].is_pressed():
-            log_to_file(f"[ManualButton] All blinds closing...", logs_directory)
-            for element in devices:
-                if element['type'] == 'blind':
-                    close_all_blinds_from_button(room_name=element['room_name_id'],
-                                                device_name=element['device_name'],
-                                                go_down_pin=element['go_down_pin'])
-            log_to_file(f"[ManualButton] All blinds closed.", logs_directory)
-        else:
-            log_to_file("[ManualButton] 'Button DOWN' pressed shortly, no action!", logs_directory)
+            sleep(0.3)
+            if ManualButtons["Rolety_DOWN"].is_pressed():
+                log_to_file(f"[ManualButton] All blinds closing...", logs_directory)
+                for element in blinds:
+                    background_thread = threading.Thread(target=element.close_blind)
+                    background_thread.start()
 
-    if ManualButtons["Rolety_STOP"].is_pressed():
-        sleep(0.3)
         if ManualButtons["Rolety_STOP"].is_pressed():
-            log_to_file(f"[ManualButton] All blinds initializing...", logs_directory)
-            for element in devices:
-                if element['type'] == 'blind':
-                    initialize_all_blinds_from_button(go_up_pin=element['go_up_pin'],
-                                                      go_down_pin=element['go_down_pin'])
-            log_to_file(f"[ManualButton] All blinds initialized.", logs_directory)
-        else:
-            log_to_file("[ManualButton] 'Button DOWN'  pressed shortly, no action!", logs_directory)
+            sleep(0.3)
+            if ManualButtons["Rolety_STOP"].is_pressed():
+                log_to_file(f"[ManualButton] All blinds stopping...", logs_directory)
+                for element in blinds:
+                    background_thread = threading.Thread(target=element.stop_blind)
+                    background_thread.start()
 
-    if ManualButtons["Emergency_STOP"].is_pressed():
-        sleep(0.5)
         if ManualButtons["Emergency_STOP"].is_pressed():
-            log_to_file(f"[ManualButton] Emergency blinds initializing...", logs_directory)
-            for element in devices:
-                if element['type'] == 'blind':
-                    initialize_all_blinds_from_button(go_up_pin=element['go_up_pin'],
-                                                      go_down_pin=element['go_down_pin'])
-            log_to_file(f"[ManualButton] Emergency blinds initialized.", logs_directory)
-        else:
-            log_to_file("[ManualButton] 'Button EMERGENCY'  pressed shortly, no action!", logs_directory)
+            sleep(0.5)
+            if ManualButtons["Emergency_STOP"].is_pressed():
+                log_to_file(f"[ManualButton] Emergency blinds stopping...", logs_directory)
+                for element in blinds:
+                    background_thread = threading.Thread(target=element.stop_blind)
+                    background_thread.start()
 
-    if ManualButtons["Reboot"].is_pressed():
-        sleep(0.5)
-        if ManualButtons["Shutdown"].is_pressed():
-            log_to_file(f"[ManualButton] Restart system performing...", logs_directory)
-            system_restart()
-        else:
-            log_to_file("[ManualButton] Restart system performed...", logs_directory)
+        if ManualButtons["Reboot"].is_pressed():
+            sleep(0.5)
+            if ManualButtons["Reboot"].is_pressed():
+                log_to_file(f"[ManualButton] Restart system performing...", logs_directory)
+                background_thread = threading.Thread(target=system_restart)
+                background_thread.start()
 
-    if ManualButtons["Shutdown"].is_pressed():
-        sleep(0.5)
         if ManualButtons["Shutdown"].is_pressed():
-            log_to_file(f"[ManualButton] Shutdown system performing...", logs_directory)
-            system_shutdown()
-        else:
-            log_to_file(f"[ManualButton] Shutdown system performed...", logs_directory)
+            sleep(0.5)
+            if ManualButtons["Shutdown"].is_pressed():
+                log_to_file(f"[ManualButton] Shutdown system performing...", logs_directory)
+                background_thread = threading.Thread(target=system_shutdown)
+                background_thread.start()
