@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 
 from .models import Room, Blind, Light
-from .smart_home import smart_home as controller
+import logger as logger
 import threading
 import os
 
@@ -12,7 +12,8 @@ def index(request):
     room_names = Room.objects.all()
     all_blinds = Blind.objects.all()
     all_lights = Light.objects.all()
-    logs_directory = "devices/smart_home/logs/"
+    logs_directory = logger.get_logs_directory()
+
 
     with open(f"devices/smart_home/connected_devices.txt", "w") as f:
         for element in all_blinds.values():
@@ -29,34 +30,34 @@ def index(request):
         main_action = received_data.get('main_action')
         try:
             if "all_blinds_open" in main_action:
-                controller.log_to_file(f"[WebServer] All blinds opening...", logs_directory)
+                logger.log_to_file(f"[WebServer] All blinds opening...", logs_directory)
                 for blind in Blind.objects.all():
                     background_thread = threading.Thread(target=blind.open_blind)
                     background_thread.start()
             elif "all_blinds_close" in main_action:
-                controller.log_to_file(f"[WebServer] All blinds closing...", logs_directory)
+                logger.log_to_file(f"[WebServer] All blinds closing...", logs_directory)
                 for blind in Blind.objects.all():
                     background_thread = threading.Thread(target=blind.close_blind)
                     background_thread.start()
             elif "all_blinds_stop" in main_action:
-                controller.log_to_file(f"[WebServer] All blinds stopping...", logs_directory)
+                logger.log_to_file(f"[WebServer] All blinds stopping...", logs_directory)
                 for blind in Blind.objects.all():
                     background_thread = threading.Thread(target=blind.stop_blind())
                     background_thread.start()
             elif "emergency_stop" in main_action:
-                controller.log_to_file(f"[WebServer] Emergency stop performing...", logs_directory)
+                logger.log_to_file(f"[WebServer] Emergency stop performing...", logs_directory)
                 for blind in Blind.objects.all():
                     background_thread = threading.Thread(target=blind.stop_blind)
                     background_thread.start()
                 for light in Light.objects.all():
                     light.initialize_light()
             elif "restart_system" in main_action:
-                controller.log_to_file(f"[WebServer] Restart system performing...", logs_directory)
-                background_thread = threading.Thread(target=controller.system_restart)
+                logger.log_to_file(f"[WebServer] Restart system performing...", logs_directory)
+                background_thread = threading.Thread(target=logger.system_restart)
                 background_thread.start()
             elif "shutdown_system" in main_action:
-                controller.log_to_file(f"[WebServer] Shutdown system performing...", logs_directory)
-                background_thread = threading.Thread(target=controller.system_shutdown)
+                logger.log_to_file(f"[WebServer] Shutdown system performing...", logs_directory)
+                background_thread = threading.Thread(target=logger.system_shutdown)
                 background_thread.start()
             else:
                 pass
