@@ -61,7 +61,7 @@ if __name__ =="__main__":
             sleep(0.3)
             if ManualButtons["Rolety_UP"].is_pressed():
                 for blind in Blind.objects.all():
-                    background_thread = threading.Thread(target=blind.open_blind)
+                    background_thread = threading.Thread(target=blind.open_blind, args=["but"])
                     background_thread.start()
                 logger.log_to_file(f"[ManualButton] All blinds opening...", logs_directory)
 
@@ -69,7 +69,7 @@ if __name__ =="__main__":
             sleep(0.3)
             if ManualButtons["Rolety_DOWN"].is_pressed():
                 for blind in Blind.objects.all():
-                    background_thread = threading.Thread(target=blind.close_blind)
+                    background_thread = threading.Thread(target=blind.close_blind, args=["but"])
                     background_thread.start()
                 logger.log_to_file(f"[ManualButton] All blinds closing...", logs_directory)
 
@@ -77,7 +77,7 @@ if __name__ =="__main__":
             sleep(0.3)
             if ManualButtons["Rolety_STOP"].is_pressed():
                 for blind in Blind.objects.all():
-                    background_thread = threading.Thread(target=blind.stop_blind)
+                    background_thread = threading.Thread(target=blind.stop_blind, args=["but"])
                     background_thread.start()
                 logger.log_to_file(f"[ManualButton] All blinds stopping...", logs_directory)
 
@@ -85,7 +85,7 @@ if __name__ =="__main__":
             sleep(0.5)
             if ManualButtons["Emergency_STOP"].is_pressed():
                 for blind in Blind.objects.all():
-                    background_thread = threading.Thread(target=blind.stop_blind)
+                    background_thread = threading.Thread(target=blind.stop_blind, args=["but"])
                     background_thread.start()
                 logger.log_to_file(f"[ManualButton] Emergency blinds stopping...", logs_directory)
 
@@ -93,12 +93,12 @@ if __name__ =="__main__":
             sleep(0.5)
             if ManualButtons["Reboot"].is_pressed():
                 logger.log_to_file(f"[ManualButton] Restart system performing...", logs_directory)
-                background_thread = threading.Thread(target=system_restart)
+                background_thread = threading.Thread(target=system_restart, args=["but"])
                 background_thread.start()
 
         if ManualButtons["Shutdown"].is_pressed():
             sleep(0.5)
             if ManualButtons["Shutdown"].is_pressed():
                 logger.log_to_file(f"[ManualButton] Shutdown system performing...", logs_directory)
-                background_thread = threading.Thread(target=system_shutdown)
+                background_thread = threading.Thread(target=system_shutdown, args=["but"])
                 background_thread.start()

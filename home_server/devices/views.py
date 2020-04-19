@@ -14,7 +14,6 @@ def index(request):
     all_lights = Light.objects.all()
     logs_directory = logger.get_logs_directory()
 
-
     with open(f"devices/smart_home/connected_devices.txt", "w") as f:
         for element in all_blinds.values():
             element["type"] = "blind"
@@ -32,32 +31,32 @@ def index(request):
             if "all_blinds_open" in main_action:
                 logger.log_to_file(f"[WebServer] All blinds opening...", logs_directory)
                 for blind in Blind.objects.all():
-                    background_thread = threading.Thread(target=blind.open_blind)
+                    background_thread = threading.Thread(target=blind.open_blind, args=["web"])
                     background_thread.start()
             elif "all_blinds_close" in main_action:
                 logger.log_to_file(f"[WebServer] All blinds closing...", logs_directory)
                 for blind in Blind.objects.all():
-                    background_thread = threading.Thread(target=blind.close_blind)
+                    background_thread = threading.Thread(target=blind.close_blind, args=["web"])
                     background_thread.start()
             elif "all_blinds_stop" in main_action:
                 logger.log_to_file(f"[WebServer] All blinds stopping...", logs_directory)
                 for blind in Blind.objects.all():
-                    background_thread = threading.Thread(target=blind.stop_blind())
+                    background_thread = threading.Thread(target=blind.stop_blind(), args=["web"])
                     background_thread.start()
             elif "emergency_stop" in main_action:
                 logger.log_to_file(f"[WebServer] Emergency stop performing...", logs_directory)
                 for blind in Blind.objects.all():
-                    background_thread = threading.Thread(target=blind.stop_blind)
+                    background_thread = threading.Thread(target=blind.stop_blind, args=["web"])
                     background_thread.start()
                 for light in Light.objects.all():
                     light.initialize_light()
             elif "restart_system" in main_action:
                 logger.log_to_file(f"[WebServer] Restart system performing...", logs_directory)
-                background_thread = threading.Thread(target=logger.system_restart)
+                background_thread = threading.Thread(target=logger.system_restart, args=["web"])
                 background_thread.start()
             elif "shutdown_system" in main_action:
                 logger.log_to_file(f"[WebServer] Shutdown system performing...", logs_directory)
-                background_thread = threading.Thread(target=logger.system_shutdown)
+                background_thread = threading.Thread(target=logger.system_shutdown, args=["web"])
                 background_thread.start()
             else:
                 pass
@@ -83,13 +82,13 @@ def room(request, room_name):
                 blind_name = received_data.get('blind_name')
                 action = received_data.get('action')
                 if 'open' in action:
-                    background_thread = threading.Thread(target=Blind.objects.get(device_name=blind_name).open_blind)
+                    background_thread = threading.Thread(target=Blind.objects.get(device_name=blind_name).open_blind, args=["web"])
                     background_thread.start()
                 elif 'close' in action:
-                    background_thread = threading.Thread(target=Blind.objects.get(device_name=blind_name).close_blind)
+                    background_thread = threading.Thread(target=Blind.objects.get(device_name=blind_name).close_blind, args=["web"])
                     background_thread.start()
                 elif 'stop' in action:
-                    background_thread = threading.Thread(target=Blind.objects.get(device_name=blind_name).stop_blind)
+                    background_thread = threading.Thread(target=Blind.objects.get(device_name=blind_name).stop_blind, args=["web"])
                     background_thread.start()
                 else:
                     pass

@@ -27,14 +27,21 @@ class Blind(models.Model):
         GPIO.setup(self.go_up_pin, GPIO.OUT)
         GPIO.setup(self.go_down_pin, GPIO.OUT)
 
-    def open_blind(self):
+    def check_source(self, src):
+        if src == "web":
+            return "[WebServer]"
+        if src == "but":
+            return "[ManualButton]"
+
+    def open_blind(self, src):
+        src_text = self.check_source(src)
         self.setup_gpio()
         # If blind is closing (0 on input) - stop closing
         if not GPIO.input(self.go_down_pin):
             GPIO.output(self.go_down_pin, 1)
-            logger.log_to_file(f"Blind '{self.device_name}' in '{self.room_name}' closing aborted!",
+            logger.log_to_file(f"{src_text} Blind '{self.device_name}' in '{self.room_name}' closing aborted!",
                                logs_directory)
-        logger.log_to_file(f"Blind '{self.device_name}' in '{self.room_name}' opening...",
+        logger.log_to_file(f"{src_text} Blind '{self.device_name}' in '{self.room_name}' opening...",
                            logs_directory)
         GPIO.output(self.go_up_pin, 0)
         for i in range(150):
@@ -45,16 +52,17 @@ class Blind(models.Model):
                 break
         else:
             GPIO.output(self.go_up_pin, 1)
-            logger.log_to_file(f"Blind '{self.device_name}' in '{self.room_name}' opened.", logs_directory)
+            logger.log_to_file(f"{src_text} Blind '{self.device_name}' in '{self.room_name}' opened.", logs_directory)
 
-    def close_blind(self):
+    def close_blind(self, src):
+        src_text = self.check_source(src)
         self.setup_gpio()
         # If blind is opening (0 on input) - stop opening
         if not GPIO.input(self.go_up_pin):
             GPIO.output(self.go_up_pin, 1)
-            logger.log_to_file(f"Blind '{self.device_name}' in '{self.room_name}' opening aborted!",
+            logger.log_to_file(f"{src_text} Blind '{self.device_name}' in '{self.room_name}' opening aborted!",
                                logs_directory)
-        logger.log_to_file(f"Blind '{self.device_name}' in '{self.room_name}' closing...",
+        logger.log_to_file(f"{src_text} Blind '{self.device_name}' in '{self.room_name}' closing...",
                            logs_directory)
         GPIO.output(self.go_down_pin, 0)
         for i in range(150):
@@ -65,20 +73,22 @@ class Blind(models.Model):
                 break
         else:
             GPIO.output(self.go_down_pin, 1)
-            logger.log_to_file(f"Blind '{self.device_name}' in '{self.room_name}' closed.", logs_directory)
+            logger.log_to_file(f"{src_text} Blind '{self.device_name}' in '{self.room_name}' closed.", logs_directory)
             print(f"Blind '{self.device_name}' in '{self.room_name}' closed.")
 
-    def initialize_blind(self):
+    def initialize_blind(self, src):
+        src_text = self.check_source(src)
         self.setup_gpio()
         GPIO.output(self.go_up_pin, 1)
         GPIO.output(self.go_down_pin, 1)
-        logger.log_to_file(f"Blind '{self.device_name} initialized.", logs_directory)
+        logger.log_to_file(f"{src_text} Blind '{self.device_name} initialized.", logs_directory)
 
-    def stop_blind(self):
+    def stop_blind(self, src):
+        src_text = self.check_source(src)
         self.setup_gpio()
         GPIO.output(self.go_up_pin, 1)
         GPIO.output(self.go_down_pin, 1)
-        logger.log_to_file(f"Blind '{self.device_name} stopped.", logs_directory)
+        logger.log_to_file(f"{src_text} Blind '{self.device_name} stopped.", logs_directory)
         print("stopped")
 
 
