@@ -41,7 +41,7 @@ def index(request):
             elif "all_blinds_stop" in main_action:
                 logger.log_to_file(f"[WebServer] All blinds stopping...", logs_directory)
                 for blind in Blind.objects.all():
-                    background_thread = threading.Thread(target=blind.stop_blind(), args=["web"])
+                    background_thread = threading.Thread(target=blind.stop_blind, args=["web"])
                     background_thread.start()
             elif "emergency_stop" in main_action:
                 logger.log_to_file(f"[WebServer] Emergency stop performing...", logs_directory)
