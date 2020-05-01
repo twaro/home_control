@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en" style="height: 60%;">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{% static 'devices/css/bootstrap.min.css' %}">
+    <script src="{% static 'devices/js/bootstrap.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'devices/fontawesome/css/all.css' %}">
+    <script defer src="{% static 'devices/fontawesome/js/all.js"></script>
+    <title>Page not found</title>
+</head>
+<body style="height: 100%; display:flex; align-items: center; justify-content: center;">
+    <div class="justify-content-center align-self-center">
+            <center>
+            <h6>OOPS! PAGE NOT FOUND</h6>
+            <h1 class="display-1 font-weight-bold">404</h1>
+            <h5>WE ARE SORRY, BUT THE PAGE YOU REQUESTED WAS</h5>
+            <h5> NOT FOUND</h5>
+            <p>
+                <a class="navbar-brand" href="{% url 'index' %}">
+                    <span class="fas fa-home" aria-label="Home"></span><br>
+                    Go to homepage
+                </a>
+            </p>
+            </center>
+    </div>
+</body>
+</html>

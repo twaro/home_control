@@ -36,34 +36,29 @@ def open_all_blinds(source):
         background_thread = threading.Thread(target=blind.open_blind, args=[source])
         background_thread.start()
         print("blind")
-    logger.log_to_file(f"[ManualButton] All blinds opening...", logger.get_logs_directory())
 
 
 def close_all_blinds(source):
     for blind in Blind.objects.all():
         background_thread = threading.Thread(target=blind.close_blind, args=[source])
         background_thread.start()
-    logger.log_to_file(f"[ManualButton] All blinds closing...", logger.get_logs_directory())
 
 def stop_all_blinds(source):
     for blind in Blind.objects.all():
         background_thread = threading.Thread(target=blind.stop_blind, args=[source])
         background_thread.start()
-    logger.log_to_file(f"[ManualButton] All blinds stopping...", logger.get_logs_directory())
 
-def system_restart(source):
+def system_restart():
     def restart():
         system('sudo reboot')
-    logger.log_to_file(f"[ManualButton] Restart system performing...", logger.get_logs_directory())
-    background_thread = threading.Thread(target=restart, args=[source])
+    background_thread = threading.Thread(target=restart)
     background_thread.start()
 
 
-def system_shutdown(source):
+def system_shutdown():
     def shutdown():
         system('sudo poweroff -f')
-    logger.log_to_file(f"[ManualButton] Shutdown system performing...", logger.get_logs_directory())
-    background_thread = threading.Thread(target=shutdown, args=[source])
+    background_thread = threading.Thread(target=shutdown)
     background_thread.start()
 
 
@@ -95,12 +90,14 @@ if __name__ == "__main__":
         current_time = pytz.timezone("Europe/Warsaw").localize(datetime.now())
         # Sunrise
         if today_sunrise.period_on < current_time < today_sunrise.period_off:
+            logger.log_to_file(f"[AutoSun] All blinds opening...", logger.get_logs_directory())
             today_sunrise.action()
 
         if today_sunrise.period_on < current_time < today_sunrise.period_off:
             today_sunrise.set_inactive()
         # Sunset
         if today_sunset.period_on < current_time < today_sunset.period_off:
+            logger.log_to_file(f"[AutoSun] All blinds closing...", logger.get_logs_directory())
             today_sunset.action()
 
         if today_sunset.period_on < current_time < today_sunset.period_off:
@@ -111,28 +108,34 @@ if __name__ == "__main__":
             sleep(0.3)
             if ManualButtons["Rolety_UP"].is_pressed():
                 open_all_blinds(source="but")
+                logger.log_to_file(f"[ManualButton] All blinds opening...", logger.get_logs_directory())
 
         if ManualButtons["Rolety_DOWN"].is_pressed():
             sleep(0.3)
             if ManualButtons["Rolety_DOWN"].is_pressed():
                 close_all_blinds(source="but")
+                logger.log_to_file(f"[ManualButton] All blinds closing...", logger.get_logs_directory())
 
         if ManualButtons["Rolety_STOP"].is_pressed():
             sleep(0.3)
             if ManualButtons["Rolety_STOP"].is_pressed():
                 stop_all_blinds(source="but")
+                logger.log_to_file(f"[ManualButton] All blinds stopping...", logger.get_logs_directory())
 
         if ManualButtons["Emergency_STOP"].is_pressed():
             sleep(0.5)
             if ManualButtons["Emergency_STOP"].is_pressed():
                 stop_all_blinds(source="but")
+                logger.log_to_file(f"[ManualButton] All blinds stopping...", logger.get_logs_directory())
 
         if ManualButtons["Reboot"].is_pressed():
             sleep(0.5)
             if ManualButtons["Reboot"].is_pressed():
-                system_restart(source="but")
+                logger.log_to_file(f"[ManualButton] Restart system performing...", logger.get_logs_directory())
+                system_restart()
 
         if ManualButtons["Shutdown"].is_pressed():
             sleep(0.5)
             if ManualButtons["Shutdown"].is_pressed():
-                system_shutdown(source="but")
+                logger.log_to_file(f"[ManualButton] Shutdown system performing...", logger.get_logs_directory())
+                system_shutdown()

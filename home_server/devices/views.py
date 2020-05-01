@@ -4,23 +4,14 @@ from django.http import HttpResponse, HttpResponseRedirect
 from .models import Room, Blind, Light
 import logger as logger
 import threading
+import manual_buttons
 import os
 
 
 def index(request):
 
     room_names = Room.objects.all()
-    all_blinds = Blind.objects.all()
-    all_lights = Light.objects.all()
-    logs_directory = logger.get_logs_directory()
 
-    with open(f"devices/smart_home/connected_devices.txt", "w") as f:
-        for element in all_blinds.values():
-            element["type"] = "blind"
-            print(element, file=f)
-        for element in all_lights.values():
-            element["type"] = "light"
-            print(element, file=f)
 
     context = {'room_names': room_names}
 
@@ -29,35 +20,25 @@ def index(request):
         main_action = received_data.get('main_action')
         try:
             if "all_blinds_open" in main_action:
-                logger.log_to_file(f"[WebServer] All blinds opening...", logs_directory)
-                for blind in Blind.objects.all():
-                    background_thread = threading.Thread(target=blind.open_blind, args=["web"])
-                    background_thread.start()
+                logger.log_to_file(f"[WebServer] All blinds opening...", logger.get_logs_directory())
+                manual_buttons.open_all_blinds(source="web")
             elif "all_blinds_close" in main_action:
-                logger.log_to_file(f"[WebServer] All blinds closing...", logs_directory)
-                for blind in Blind.objects.all():
-                    background_thread = threading.Thread(target=blind.close_blind, args=["web"])
-                    background_thread.start()
+                logger.log_to_file(f"[WebServer] All blinds closing...", logger.get_logs_directory())
+                manual_buttons.close_all_blinds(source="web")
             elif "all_blinds_stop" in main_action:
-                logger.log_to_file(f"[WebServer] All blinds stopping...", logs_directory)
-                for blind in Blind.objects.all():
-                    background_thread = threading.Thread(target=blind.stop_blind, args=["web"])
-                    background_thread.start()
+                logger.log_to_file(f"[WebServer] All blinds stopping...", logger.get_logs_directory())
+                manual_buttons.stop_all_blinds(source="web")
             elif "emergency_stop" in main_action:
-                logger.log_to_file(f"[WebServer] Emergency stop performing...", logs_directory)
-                for blind in Blind.objects.all():
-                    background_thread = threading.Thread(target=blind.stop_blind, args=["web"])
-                    background_thread.start()
+                logger.log_to_file(f"[WebServer] Emergency stop performing...", logger.get_logs_directory())
+                manual_buttons.stop_all_blinds(source="web")
                 for light in Light.objects.all():
                     light.initialize_light()
             elif "restart_system" in main_action:
-                logger.log_to_file(f"[WebServer] Restart system performing...", logs_directory)
-                background_thread = threading.Thread(target=logger.system_restart, args=["web"])
-                background_thread.start()
+                logger.log_to_file(f"[WebServer] Restart system performing...", logger.get_logs_directory())
+                manual_buttons.system_restart()
             elif "shutdown_system" in main_action:
-                logger.log_to_file(f"[WebServer] Shutdown system performing...", logs_directory)
-                background_thread = threading.Thread(target=logger.system_shutdown, args=["web"])
-                background_thread.start()
+                logger.log_to_file(f"[WebServer] Shutdown system performing...", logger.get_logs_directory())
+                manual_buttons.system_shutdown()
             else:
                 pass
         except:
@@ -78,7 +59,6 @@ def room(request, room_name):
         device_type = received_data.get('device_type')
         try:
             if 'blind' in device_type:
-                room_name = received_data.get('room_name')
                 blind_name = received_data.get('blind_name')
                 action = received_data.get('action')
                 if 'open' in action:
@@ -97,7 +77,6 @@ def room(request, room_name):
             return HttpResponse("")
         try:
             if 'light' in device_type:
-                room_name = received_data.get('room_name')
                 light_name = received_data.get('light_name')
                 action = received_data.get('action')
                 if 'turn_on' in action:
