@@ -2,6 +2,7 @@ from django.db import models
 import logger as logger
 from time import sleep
 import RPi.GPIO as GPIO
+import threading
 
 logs_directory = logger.get_logs_directory()
 
@@ -78,6 +79,7 @@ class Blind(models.Model):
             logger.log_to_file(f"{src_text} Blind '{self.device_name}' in '{self.room_name}' closed.", logs_directory)
             print(f"Blind '{self.device_name}' in '{self.room_name}' closed.")
 
+
     def initialize_blind(self, src):
         src_text = self.check_source(src)
         self.setup_gpio()
@@ -92,6 +94,23 @@ class Blind(models.Model):
         GPIO.output(self.go_down_pin, 1)
         logger.log_to_file(f"{src_text} Blind '{self.device_name} stopped.", logs_directory)
         print("stopped")
+
+
+def open_all_blinds(source):
+    for blind in Blind.objects.all():
+        background_thread = threading.Thread(target=blind.open_blind, args=[source])
+        background_thread.start()
+
+
+def close_all_blinds(source):
+    for blind in Blind.objects.all():
+        background_thread = threading.Thread(target=blind.close_blind, args=[source])
+        background_thread.start()
+
+def stop_all_blinds(source):
+    for blind in Blind.objects.all():
+        background_thread = threading.Thread(target=blind.stop_blind, args=[source])
+        background_thread.start()
 
 
 class Light(models.Model): # TODO This Class is not finished
@@ -121,3 +140,4 @@ class Light(models.Model): # TODO This Class is not finished
             # GPIO.output(pin, 1)
             print("Initialize light")
             logger.log_to_file(f"Light '{self.device_name} in '{self.room_name}' initialized", logs_directory)
+

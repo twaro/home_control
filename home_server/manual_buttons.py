@@ -7,7 +7,7 @@ import django
 
 environ.setdefault('DJANGO_SETTINGS_MODULE', 'home_server.settings')
 django.setup()
-from devices.models import Blind
+import devices.models
 import RPi.GPIO as GPIO
 import logger as logger
 import sun_cycles
@@ -31,23 +31,6 @@ class ManualButton:
             return False
 
 
-def open_all_blinds(source):
-    for blind in Blind.objects.all():
-        background_thread = threading.Thread(target=blind.open_blind, args=[source])
-        background_thread.start()
-        print("blind")
-
-
-def close_all_blinds(source):
-    for blind in Blind.objects.all():
-        background_thread = threading.Thread(target=blind.close_blind, args=[source])
-        background_thread.start()
-
-def stop_all_blinds(source):
-    for blind in Blind.objects.all():
-        background_thread = threading.Thread(target=blind.stop_blind, args=[source])
-        background_thread.start()
-
 def system_restart():
     def restart():
         system('sudo reboot')
@@ -63,7 +46,6 @@ def system_shutdown():
 
 
 if __name__ == "__main__":
-
     last_days_logging = 7
 
     ManualButtons = {"Rolety_UP": ManualButton(button_name="Rolety_UP", pin=18),
@@ -107,25 +89,25 @@ if __name__ == "__main__":
         if ManualButtons["Rolety_UP"].is_pressed():
             sleep(0.3)
             if ManualButtons["Rolety_UP"].is_pressed():
-                open_all_blinds(source="but")
+                devices.models.open_all_blinds(source="but")
                 logger.log_to_file(f"[ManualButton] All blinds opening...", logger.get_logs_directory())
 
         if ManualButtons["Rolety_DOWN"].is_pressed():
             sleep(0.3)
             if ManualButtons["Rolety_DOWN"].is_pressed():
-                close_all_blinds(source="but")
+                devices.models.close_all_blinds(source="but")
                 logger.log_to_file(f"[ManualButton] All blinds closing...", logger.get_logs_directory())
 
         if ManualButtons["Rolety_STOP"].is_pressed():
             sleep(0.3)
             if ManualButtons["Rolety_STOP"].is_pressed():
-                stop_all_blinds(source="but")
+                devices.models.stop_all_blinds(source="but")
                 logger.log_to_file(f"[ManualButton] All blinds stopping...", logger.get_logs_directory())
 
         if ManualButtons["Emergency_STOP"].is_pressed():
             sleep(0.5)
             if ManualButtons["Emergency_STOP"].is_pressed():
-                stop_all_blinds(source="but")
+                devices.models.stop_all_blinds(source="but")
                 logger.log_to_file(f"[ManualButton] All blinds stopping...", logger.get_logs_directory())
 
         if ManualButtons["Reboot"].is_pressed():

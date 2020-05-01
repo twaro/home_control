@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 
 from .models import Room, Blind, Light
+from .models import open_all_blinds, close_all_blinds, stop_all_blinds
 import logger as logger
 import threading
 import manual_buttons
@@ -21,16 +22,16 @@ def index(request):
         try:
             if "all_blinds_open" in main_action:
                 logger.log_to_file(f"[WebServer] All blinds opening...", logger.get_logs_directory())
-                manual_buttons.open_all_blinds(source="web")
+                open_all_blinds(source="web")
             elif "all_blinds_close" in main_action:
                 logger.log_to_file(f"[WebServer] All blinds closing...", logger.get_logs_directory())
-                manual_buttons.close_all_blinds(source="web")
+                close_all_blinds(source="web")
             elif "all_blinds_stop" in main_action:
                 logger.log_to_file(f"[WebServer] All blinds stopping...", logger.get_logs_directory())
-                manual_buttons.stop_all_blinds(source="web")
+                stop_all_blinds(source="web")
             elif "emergency_stop" in main_action:
                 logger.log_to_file(f"[WebServer] Emergency stop performing...", logger.get_logs_directory())
-                manual_buttons.stop_all_blinds(source="web")
+                stop_all_blinds(source="web")
                 for light in Light.objects.all():
                     light.initialize_light()
             elif "restart_system" in main_action:
