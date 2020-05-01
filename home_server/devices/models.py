@@ -32,6 +32,8 @@ class Blind(models.Model):
             return "[WebServer]"
         if src == "but":
             return "[ManualButton]"
+        if src == "sun":
+            return "[AutoSun]"
 
     def open_blind(self, src):
         src_text = self.check_source(src)

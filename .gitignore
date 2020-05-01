@@ -3,3 +3,4 @@ venv/
 *.sqlite3
 home_server/devices/migrations/*
 !home_server/devices/migrations/__init__.py
+RPi
