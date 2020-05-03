@@ -25,7 +25,7 @@ SECRET_KEY = '&#1&u^uo6l43-%loxzql#rwup0af*7)bx3lpi*to@8^fo-l35^'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', '192.168.0.248', 'localhost', '192.168.0.103']
+ALLOWED_HOSTS = ['127.0.0.1', '192.168.0.164', 'localhost', '192.168.0.103']
 
 
 # Application definition
@@ -121,6 +121,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = 'static_files'
+STATIC_ROOT = os.path.join(BASE_DIR, "static_deploy")
 #Below is working for Windows
 STATICFILES_DIRS = (os.path.join('static'),)

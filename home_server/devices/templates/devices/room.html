@@ -39,13 +39,13 @@
             {% endfor %}
             </ul>
             {% else %}
-                <span class="nav-link disabled">No rooms available.</span>
+                <span class="nav-link disabled">Brak pomieszczeń.</span>
             {% endif %}
         </div>
   </nav>
 
   <div class="container-fluid text-center bg-light">
-      <h2 class="lead bg-secondary text-white font-italic">BLINDS</h2>
+      <h2 class="lead bg-secondary text-white font-italic">ROLETY</h2>
   </div>
   {% if blinds_in_room %}
   <div class="container">
@@ -64,7 +64,7 @@
                     <input type="hidden" name="room_name" value="{{ room_name }}">
                     <input type="hidden" name="blind_name" value="{{ blind }}">
                     <input type="hidden" name="action" value="open">
-                    <button class="btn btn-success" type="submit">Open</button>
+                    <button class="btn btn-success col-md-4 col-lg-4" type="submit">Otwórz</button>
                     </form>
                     </p>
                  <p>
@@ -75,7 +75,7 @@
                     <input type="hidden" name="room_name" value="{{ room_name }}">
                     <input type="hidden" name="blind_name" value="{{ blind }}">
                     <input type="hidden" name="action" value="stop">
-                    <button class="btn btn-danger" type="submit">STOP</button>
+                    <button class="btn btn-danger col-md-4 col-lg-4" type="submit">STOP</button>
                     </form>
                     </p>
                  <p>
@@ -86,7 +86,7 @@
                     <input type="hidden" name="room_name" value="{{ room_name }}">
                     <input type="hidden" name="blind_name" value="{{ blind }}">
                     <input type="hidden" name="action" value="close">
-                    <button class="btn btn-success" type="submit">Close</button>
+                    <button class="btn btn-success col-md-4 col-lg-4" type="submit">Zamknij</button>
                     </form>
                     </p>
                     <p>&nbsp;</p>
@@ -99,12 +99,12 @@
 
   {% else %}
       <div class="container-fluid alert alert-warning text-center" role="alert">
-      No available <b>Blinds</b> in this room.
+      Brak <b>Rolet</b> w tym pomieszczeniu.
       </div>
   {% endif %}
 <!--  ===================== LIGHTS =================  -->
 
-
+{% if lights %}
   <div class="container-fluid text-center bg-light">
       <h2 class="lead bg-secondary text-white font-italic">LIGHTS</h2>
   </div>
@@ -149,11 +149,11 @@
 
   {% else %}
       <div class="container-fluid alert alert-warning text-center" role="alert">
-      No available <b>Lights</b> in this room.
+      Brak <b>Oświetlenia</b> w tym pomieszczeniu.
       </div>
 
   {% endif %}
-
+{% endif %}
 
 
 

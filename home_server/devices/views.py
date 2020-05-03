@@ -54,6 +54,7 @@ def room(request, room_name):
                'room_name': room_name,
                'blinds_in_room': Blind.objects.all().filter(room_name__exact=room_name),
                'lights_in_room': Light.objects.all().filter(room_name__exact=room_name),
+               'lights': Light.objects.filter(room_name__exact=room_name).count(),
                }
     if request.POST:
         received_data = request.POST
